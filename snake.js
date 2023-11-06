@@ -13,8 +13,7 @@ var mapHight = 10;
 var mapWidth = 10;
 var gameRun = false;
 var lastStepTime;
-var maxStepDelay = 500;
-
+var maxStepDelay = 250;
 
 
 document.addEventListener('keyup', function(event) {
@@ -55,6 +54,15 @@ document.addEventListener('keyup', function(event) {
 
 gameStart();
 
+function setApplesAmount(){
+    applesAmount = document.getElementById("applesAmount").value;
+}
+
+function setStepDelay(){
+    maxStepDelay = document.getElementById("stepDelay").value;
+}
+
+
 function gameLoop(){
     if(Date.now() - lastStepTime >= maxStepDelay)
         gameStep();
@@ -68,6 +76,7 @@ function gameStart(){
     xPos = xOld = xStart = random(0, 10);
     yPos = yOld = yStart = random(0, 10);
     intervalID = window.setInterval(gameLoop, 50);
+    apples.splice(0, apples.length);
     preshow();
 
     document.getElementById("log").innerText = "Press WSAD to start!";

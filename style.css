@@ -8,7 +8,11 @@ label{
     font-family: system-ui,-apple-system,system-ui,"Helvetica Neue",Helvetica,Arial,sans-serif;
 }
 
-
+.left{
+  margin-bottom: auto;
+  align-items: left;
+  text-align: left;
+}
 
 .button-19 {
   appearance: button;
