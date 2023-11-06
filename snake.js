@@ -15,6 +15,44 @@ var gameRun = false;
 var lastStepTime;
 var maxStepDelay = 500;
 
+
+
+document.addEventListener('keyup', function(event) {
+    const key = event.key; // "a", "1", "Shift", etc.
+    if(gameRun){
+        if(key == "a"){
+            if(dirs.length <= 1 || (dirs[dirs.length - 1] != 3 && dirs[dirs.length - 1] != 1)){
+                dirs.push(1);
+                gameStep();
+            }    
+        }
+        else if(key == "w"){
+            if(dirs.length <= 1 || (dirs[dirs.length - 1] != 4 && dirs[dirs.length - 1] != 2)){
+                dirs.push(2);
+                gameStep();
+            }   
+        }
+        else if(key == "d"){
+            if(dirs.length <= 1 || (dirs[dirs.length - 1] != 1 && dirs[dirs.length - 1] != 3)){
+                dirs.push(3);
+                gameStep();
+            } 
+        }
+        else if(key == "s"){
+            if(dirs.length <= 1 || (dirs[dirs.length - 1] != 2 && dirs[dirs.length - 1] != 4)){
+                dirs.push(4);
+                gameStep();
+            }  
+        }
+        else 
+            return;
+
+
+        
+    }
+    
+});
+
 gameStart();
 
 function gameLoop(){
@@ -23,51 +61,16 @@ function gameLoop(){
 }
 
 function gameStart(){
+    currentDir = 0;
     gameRun = true;
     snakeElements.splice(0, snakeElements.length);
+    dirs.splice(0, dirs.length);
     xPos = xOld = xStart = random(0, 10);
     yPos = yOld = yStart = random(0, 10);
-
+    intervalID = window.setInterval(gameLoop, 50);
     preshow();
 
     document.getElementById("log").innerText = "Press WSAD to start!";
-    document.addEventListener('keyup', function(event) {
-        const key = event.key; // "a", "1", "Shift", etc.
-        if(gameRun){
-            if(key == "a"){
-                if(dirs.length < 1 || dirs[dirs.length - 1] != 3 && dirs[dirs.length - 1] != 1){
-                    dirs.push(1);
-                    gameStep();
-                }
-                    
-            }
-            else if(key == "w"){
-                if(dirs.length < 1 || dirs[dirs.length - 1] != 4 && dirs[dirs.length - 1] != 2){
-                    dirs.push(2);
-                    gameStep();
-                }   
-            }
-            else if(key == "d"){
-                if(dirs.length < 1 || dirs[dirs.length - 1] != 1 && dirs[dirs.length - 1] != 3){
-                    dirs.push(3);
-                    gameStep();
-                } 
-            }
-            else if(key == "s"){
-                if(dirs.length < 1 || dirs[dirs.length - 1] != 2 && dirs[dirs.length - 1] != 4){
-                    dirs.push(4);
-                    gameStep();
-                }  
-            }
-            else 
-                return;
-
-
-            if(intervalID == null)
-                intervalID = window.setInterval(gameLoop, 50);
-        }
-        
-    });
 }
 
 function generateApples(amount, appleTochange = -1){
@@ -135,13 +138,42 @@ function drawMap(){
     }
 }
 
-function drawSnake(){
-    
+function drawSnake(){  
     for(k = 0; k < snakeElements.length; k++){
+        var xRect = snakeElements[k][0]*40;
+        var yRect = snakeElements[k][1]*40;
+        var widthRect = 40;
+        var hightRect = 40;
+
         ctx.fillStyle = 'rgb(44,' +  (255 - k*2) + ', 44)';
-        ctx.fillRect(snakeElements[k][0] * 40, snakeElements[k][1] * 40, 40, 40);
-    }
         
+        if(snakeElements.length > k+1)
+        {
+            if(snakeElements[k][0] == snakeElements[k+1][0]){
+                
+                xRect += 4;
+                widthRect -= 8;
+            }
+            else if(snakeElements[k][1] == snakeElements[k+1][1])
+            {
+                yRect += 4;
+                hightRect -= 8;
+            }
+        }
+        if(k-1 >= 0)
+        {
+            if(snakeElements[k][0] == snakeElements[k-1][0]){
+                xRect += 4;
+                widthRect -= 8;
+            }   
+            else if(snakeElements[k][1] == snakeElements[k-1][1]){
+                yRect += 4;
+                hightRect -= 8;
+            }
+        }
+
+        ctx.fillRect(xRect, yRect, widthRect, hightRect);
+    }     
 }
 
 function moveHead(){
@@ -199,7 +231,7 @@ function drawApples(){
     for(h = 0; h < apples.length; h++)
     {
         ctx.fillStyle = "#ff2222";
-        ctx.fillRect(apples[h][0] * 40, apples[h][1] * 40, 40, 40);
+        ctx.fillRect(apples[h][0] * 40 + 4, apples[h][1] * 40 +4 , 40 - 8, 40 - 8);
     }
 }
 
@@ -223,7 +255,9 @@ function checkForCollisions(){
 
     for(h = 0; h < apples.length; h++)
         if(snakeElements[0][0] == apples[h][0] && snakeElements[0][1] == apples[h][1]){
-            snakeElements.push([xOld, yOld]);       
+            snakeElements.push([xOld, yOld]);  
+            if(snakeElements.length == mapHight * mapWidth)    
+                gameOver(true);
             generateApples(1, h);
         }
 }
@@ -231,7 +265,7 @@ function checkForCollisions(){
 
 
 function gameStep() {
-    console.log("game step");
+    console.log(dirs);
     lastStepTime = Date.now();
     drawMap();
     drawApples();
@@ -241,13 +275,15 @@ function gameStep() {
     checkForCollisions();
 }
 
-function gameOver(){
+function gameOver(win = false){
     gameRun = false;
     window.clearInterval(intervalID);
     intervalID = null;
-    dirs.splice(0, dirs.length);
-    document.getElementById("log").innerText = "Your score is: " + snakeElements.length;
-    
+
+    if(win)
+        document.getElementById("log").innerText = "You won!!";   
+    else
+        document.getElementById("log").innerText = "Your score is: " + snakeElements.length;
 }
 
 function random(min, max) {
